@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Find the dates, deadlines, and grading details in your course syllabus.">
+  <title>Silly Billy | Syllabus summarized</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">SB</span>Silly Billy</a>
+      <span class="header-label">Syllabus tool</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" aria-labelledby="title">
+      <h1 id="title">Your syllabus,<br><em>summarized.</em></h1>
+      <p>Find the deadlines, class dates, exams, and grading policies in your course syllabus.</p>
+    </section>
+
+    <div class="workspace">
+      <section class="panel" aria-labelledby="upload-title">
+        <h2 id="upload-title">Upload a syllabus</h2>
+        <p id="file-help" class="muted">PDF up to 25 MB</p>
+        <form id="upload-form">
+          <label for="syllabus">Choose a PDF</label>
+          <input id="syllabus" name="syllabus" type="file" accept=".pdf,application/pdf" aria-describedby="file-help" required>
+          <button class="primary" type="submit">Summarize syllabus <span aria-hidden="true">→</span></button>
+        </form>
+        <button class="secondary" id="example" type="button">View an example</button>
+      </section>
+
+      <section class="panel results" aria-labelledby="results-title">
+        <div class="result-header">
+          <h2 id="results-title">Syllabus summary</h2>
+          <span id="example-label" class="tag" hidden>Example</span>
+        </div>
+        <p role="status" id="status" class="muted">Upload a syllabus or view an example to get started.</p>
+        <dl id="summary" hidden></dl>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
