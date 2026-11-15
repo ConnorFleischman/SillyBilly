@@ -19,9 +19,11 @@ def calculate_file_hash(pdf_path):
     return hasher.hexdigest()
 
 
-def store_pdf(pdf_path, original_filename=None):
+def store_pdf(pdf_path, original_filename=None, *, prepared_chunks=None):
     """Store a PDF, optionally using its upload name as display metadata.
 
+    prepared_chunks is an internal handoff from validated upload ingestion;
+    legacy path callers still extract here.
     The path still supplies the bytes and defaults to its basename for legacy
     callers. Duplicate content retains the existing document and its metadata.
     """
@@ -54,7 +56,7 @@ def store_pdf(pdf_path, original_filename=None):
                 return existing_document[0]
 
             # Step 4: Extract and chunk the new PDF
-            all_chunks = chunk_pdf(pdf_path)
+            all_chunks = prepared_chunks if prepared_chunks is not None else chunk_pdf(pdf_path)
 
             if not all_chunks:
                 raise ValueError("No text extracted from PDF.")
@@ -70,6 +72,7 @@ def store_pdf(pdf_path, original_filename=None):
             )
 
             document_id = cur.fetchone()[0]
+
 
             # Step 6: Generate embeddings and store chunks
             for chunk in all_chunks:

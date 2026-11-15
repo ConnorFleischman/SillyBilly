@@ -28,7 +28,8 @@ with patch.object(psycopg, 'connect', side_effect=AssertionError('unexpected DB'
         page = pdf.new_page()
         page.insert_text((72, 72), 'Course syllabus fixture')
         data = pdf.tobytes()
-    response = client.post('/api/summarize', data={'syllabus': (io.BytesIO(data), 'course.pdf')})
+    with patch('app.ingest_pdf', return_value=42):
+        response = client.post('/api/summarize', data={'syllabus': (io.BytesIO(data), 'course.pdf')})
     assert response.status_code == 501, response.data
 assert 'sentence_transformers' not in sys.modules
 assert 'google.genai' not in sys.modules

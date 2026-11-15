@@ -1,12 +1,13 @@
 from pathlib import Path
 
-import pymupdf
+from rag_backend.ingestion import (
+    MAX_PDF_BYTES, InvalidPDF, PDFTooLarge, UnprocessablePDF, ingest_pdf,
+)
 from flask import Flask, jsonify, request
 
 from summarize import SummaryUnavailable, summarize_syllabus
 
 SITE = Path(__file__).resolve().parent / "site"
-MAX_PDF_BYTES = 25 * 1024 * 1024
 
 app = Flask(__name__, static_folder=str(SITE), static_url_path="")
 # Leave space for multipart headers in addition to the PDF itself.
@@ -29,24 +30,19 @@ def summarize():
     if not upload or Path(upload.filename).suffix.lower() != ".pdf":
         return jsonify(error="Choose a PDF syllabus."), 400
 
-    pdf_bytes = upload.stream.read(MAX_PDF_BYTES + 1)
-    if len(pdf_bytes) > MAX_PDF_BYTES:
+    try:
+        document_id = ingest_pdf(upload.stream, upload.filename)
+    except PDFTooLarge:
         return too_large(None)
-    if not pdf_bytes.startswith(b"%PDF-"):
-        return jsonify(error="The selected file is not a readable PDF."), 400
+    except InvalidPDF as error:
+        return jsonify(error=str(error)), 400
+    except UnprocessablePDF as error:
+        return jsonify(error=str(error)), 422
+    except Exception:
+        # Driver/config exception text can contain credentials.
+        return jsonify(error="PDF ingestion is unavailable. Please try again later."), 503
 
     try:
-        with pymupdf.open(stream=pdf_bytes, filetype="pdf") as pdf:
-            if pdf.needs_pass:
-                return jsonify(error="Choose a PDF without password protection."), 422
-            text = "\n\n".join(page.get_text(sort=True) for page in pdf)
-    except (RuntimeError, ValueError):
-        return jsonify(error="The selected file is not a readable PDF."), 400
-
-    if not text.strip():
-        return jsonify(error="This PDF has no selectable text. Try a text-based PDF."), 422
-
-    try:
-        return jsonify(summarize_syllabus(text))
+        return jsonify(summarize_syllabus(document_id))
     except SummaryUnavailable:
-        return jsonify(error="PDF text extracted. Summary generation is still being connected. You can view an example below the upload form."), 501
+        return jsonify(error="PDF stored and indexed. Summary generation is pending. You can view an example below the upload form."), 501

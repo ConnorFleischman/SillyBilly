@@ -8,6 +8,11 @@ from rag_backend import database, ingestion
 
 
 class UploadTests(unittest.TestCase):
+    def setUp(self):
+        validation = patch.object(ingestion, "validate_pdf", return_value=[{"page": 1, "text": "fixture"}])
+        validation.start()
+        self.addCleanup(validation.stop)
+
     def test_short_reads_preserve_all_bytes_and_enforce_total_limit(self):
         class ShortStream(io.BytesIO):
             def read(self, size=-1):
@@ -17,7 +22,7 @@ class UploadTests(unittest.TestCase):
         source = ShortStream(payload)
         stored = []
 
-        def store(path, original_filename):
+        def store(path, original_filename, **kwargs):
             stored.append(path.read_bytes())
             return 42
 
@@ -44,7 +49,7 @@ class UploadTests(unittest.TestCase):
             with self.subTest(result=result):
                 paths = []
 
-                def store(path, original_filename):
+                def store(path, original_filename, **kwargs):
                     paths.append(path)
                     self.assertTrue(path.is_file())
                     self.assertEqual(path.read_bytes(), b'%PDF-fixture')
@@ -89,6 +94,16 @@ class UploadTests(unittest.TestCase):
                 ingestion.ingest_pdf(source, 'report.pdf')
         source.read.assert_called_once_with(ingestion.MAX_PDF_BYTES + 1)
         store.assert_not_called()
+
+    def test_invalid_stream_contract(self):
+        for block in ('text', None, b'x' * 14):
+            source = MagicMock()
+            source.read.return_value = block
+            with self.subTest(block=type(block)), patch.object(ingestion, 'MAX_PDF_BYTES', 12), patch.object(ingestion, 'store_pdf') as store:
+                with self.assertRaises((TypeError, ValueError)):
+                    ingestion.ingest_pdf(source, 'report.pdf')
+                source.close.assert_not_called()
+                store.assert_not_called()
 
     def test_invalid_inputs_never_reach_storage(self):
         for data, name in ((b'', 'report.pdf'), (b'not pdf', 'report.pdf'), (b'%PDF-', '..'), (b'%PDF-', 'bad\x00.pdf')):

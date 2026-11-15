@@ -1,9 +1,38 @@
-"""Bounded upload ingestion; HTTP validation and error mapping belong to callers."""
+"""Shared bounded PDF validation and ingestion; callers map transport errors."""
 from pathlib import Path
 import tempfile
 from typing import BinaryIO
 
 from .database import store_pdf
+from .chunk import chunk_pages
+import pymupdf
+
+
+class InvalidPDF(ValueError):
+    """Invalid PDF upload."""
+
+class PDFTooLarge(ValueError):
+    """Upload exceeds byte limit."""
+
+class UnprocessablePDF(ValueError):
+    """Encrypted or textless PDF."""
+
+def validate_pdf(data):
+    """Parse before storage, preserving original page numbers."""
+    try:
+        with pymupdf.open(stream=data, filetype="pdf") as pdf:
+            if pdf.needs_pass:
+                raise UnprocessablePDF("Choose a PDF without password protection.")
+            pages = {n: page.get_text() for n, page in enumerate(pdf, 1)}
+    except UnprocessablePDF:
+        raise
+    except (RuntimeError, ValueError) as error:
+        raise InvalidPDF("The selected file is not a readable PDF.") from error
+    chunks = chunk_pages(pages)
+    if not chunks:
+        raise UnprocessablePDF("This PDF has no selectable text. Try a text-based PDF.")
+    return chunks
+
 
 MAX_PDF_BYTES = 25 * 1024 * 1024
 
@@ -12,9 +41,8 @@ def ingest_pdf(source: bytes | BinaryIO, original_filename: str) -> int:
     """Store upload bytes or a binary stream positioned at the PDF's start.
 
     Read at most 25 MiB + 1 from streams; never close caller-owned streams.
-    Require a PDF signature and bounded, nonempty bytes. Full PDF parsing and
-    text checks remain in store_pdf; callers own transport validation/error
-    mapping. Client names are basename-only display metadata, never disk paths.
+    Require a PDF signature and bounded, nonempty bytes. Parse and chunk
+    before storage; callers own transport validation and error mapping. Client names are basename-only display metadata, never disk paths.
     This function owns and removes its temporary directory on every exit,
     including partial writes and storage errors. Return the existing/new ID.
     """
@@ -22,7 +50,7 @@ def ingest_pdf(source: bytes | BinaryIO, original_filename: str) -> int:
         raise TypeError("original_filename must be a string")
     filename = original_filename.replace("\\", "/").rsplit("/", 1)[-1]
     if filename in ("", ".", "..") or any(ord(char) < 32 for char in filename):
-        raise ValueError("A valid display filename is required")
+        raise InvalidPDF("A valid display filename is required")
     if isinstance(source, bytes):
         data = source
     else:
@@ -41,11 +69,12 @@ def ingest_pdf(source: bytes | BinaryIO, original_filename: str) -> int:
     if not isinstance(data, bytes):
         raise TypeError("PDF input must supply bytes")
     if len(data) > MAX_PDF_BYTES:
-        raise ValueError("PDF exceeds the 25 MiB limit")
+        raise PDFTooLarge("PDF exceeds the 25 MiB limit")
     if not data.startswith(b"%PDF-"):
-        raise ValueError("PDF signature is missing")
+        raise InvalidPDF("The selected file is not a readable PDF.")
 
+    chunks = validate_pdf(data)
     with tempfile.TemporaryDirectory(prefix="silly-billy-upload-") as directory:
         path = Path(directory) / "upload.pdf"
         path.write_bytes(data)
-        return store_pdf(path, original_filename=filename)
+        return store_pdf(path, original_filename=filename, prepared_chunks=chunks)
