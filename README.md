@@ -1,55 +1,50 @@
 # SillyBilly
 Marist University Hackathon 2026 team SillyBilly's repository. 
 
-# Silly Billy
-
-Silly Billy helps students find the key details in a course syllabus. Open
-`site/index.html` in your browser and choose **View an example** to try the
-interface with sample data.
+Silly Billy helps students find important details in their course syllabi. You can upload a PDF of a syllabus to find course information, assignment deadlines, and other important course-related information; with citations to the original document. 
 
 ## Run locally
 
-Use Python 3.10 or later. From the project folder on Windows, run:
+Use Python 3.10 or later. From the project root, run:
+
+### Windows PowerShell
 
 ```powershell
-py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m flask --app app run
+py -3.14 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r silly-billy/requirements.txt -e ./silly-billy/rag-pdf-chatbot
 ```
 
-On macOS or Linux, use `python3 -m venv .venv` and
-`.venv/bin/python` in the last two commands. Open http://127.0.0.1:5000.
+### macOS/Linux
 
-The upload endpoint accepts text-based PDFs up to 25 MB. It extracts text
-using PyMuPDF and passes that text to `summarize_syllabus()`. Until that
-function is wired up, valid uploads show a message confirming PDF extraction.
-
-## Connect the team's RAG pipeline
-
-Replace the placeholder in `summarize.py` with calls to the team's existing
-chunking, embedding, PostgreSQL/pgvector storage, and retrieval modules.
-Keep each retrieval query scoped to the uploaded syllabus. Retrieve evidence
-for each summary section so a single Top-5 search does not have to cover the
-whole syllabus. Pass the retrieved excerpts to the LLM and ask it to include
-only details supported by those excerpts. If the team wants to use its existing
-PDF reader, swap it in at the extraction step in `app.py`.
-
-Return this JSON shape. Each field is a list of strings. Use an empty list
-when the syllabus does not give details for a section.
-
-```json
-{
-  "overview": ["Introduction to Environmental Science"],
-  "due_dates": ["Lab report due September 28"],
-  "lecture_dates": ["Mondays and Wednesdays, 10:00–11:15 a.m."],
-  "exam_dates": ["Midterm on October 14"],
-  "grading": ["Labs 25%"]
-}
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r silly-billy/requirements.txt -e ./silly-billy/rag-pdf-chatbot
 ```
 
-## Add to GitHub
+## Connect to a Database
 
-Copy the contents of this folder into your repository and commit them on a
-branch. Keep API keys and database credentials in server-side environment
-variables. GitHub can store all of the source. GitHub Pages can display the
-contents of `site/`, and PDF uploads require the Python server.
+Create a PostgreSQL database and user, install pgVector on the server, then apply the schema using:
+
+```sh
+psql -h localhost -U YOUR_DB_USER -d YOUR_DB_NAME -f silly-billy/rag-pdf-chatbot/schema.sql
+```
+
+## Configure the RAG pipeline
+
+Copy ~/.env.example and set the placeholders for the database and Gemini API key with the proper credentials. Restart the server once the credentials are set.
+
+## Run it
+
+Windows:
+
+```powershell
+.\.venv\Scripts\python.exe -m flask --app silly-billy/app.py run
+```
+
+macOS/Linux:
+
+```sh
+.venv/bin/python -m flask --app silly-billy/app.py run
+```
+
+Open http://127.0.0.1:5000.
