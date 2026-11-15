@@ -7,9 +7,12 @@ name = "silly-billy-rag-backend"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-    "pymupdf", "sentence-transformers", "psycopg[binary]",
+    "pymupdf>=1.24.3,<2", "sentence-transformers", "psycopg[binary]",
     "pgvector", "google-genai", "python-dotenv",
 ]
+
+[project.optional-dependencies]
+streamlit = ["streamlit"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
