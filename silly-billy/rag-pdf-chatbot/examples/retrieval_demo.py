@@ -1,16 +1,12 @@
 from embeddings import get_embedding
 import psycopg
+from database_config import get_database_url
 from pgvector.psycopg import register_vector
 
 def retrieve_chunks(question):
     question_embedding = get_embedding(question)
 
-    conn = psycopg.connect(
-        dbname="rag_chatbot",
-        user="meher",
-        host="localhost",
-        port=5432
-    )
+    conn = psycopg.connect(get_database_url())
 
     register_vector(conn)
     cur = conn.cursor()

@@ -1,14 +1,10 @@
 import psycopg
+from database_config import get_database_url
 from chunk import all_chunks
 from embeddings import get_embedding
 from pgvector.psycopg import register_vector
 
-conn = psycopg.connect(
-    dbname="rag_chatbot",
-    user="meher",
-    host="localhost",
-    port=5432
-)
+conn = psycopg.connect(get_database_url())
 register_vector(conn)
 print("Connected to PostgreSQL")
 cur = conn.cursor()
