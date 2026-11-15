@@ -23,7 +23,21 @@ def ingest_pdf(source: bytes | BinaryIO, original_filename: str) -> int:
     filename = original_filename.replace("\\", "/").rsplit("/", 1)[-1]
     if filename in ("", ".", "..") or any(ord(char) < 32 for char in filename):
         raise ValueError("A valid display filename is required")
-    data = source if isinstance(source, bytes) else source.read(MAX_PDF_BYTES + 1)
+    if isinstance(source, bytes):
+        data = source
+    else:
+        data = bytearray()
+        while len(data) < MAX_PDF_BYTES + 1:
+            remaining = MAX_PDF_BYTES + 1 - len(data)
+            block = source.read(remaining)
+            if not isinstance(block, bytes):
+                raise TypeError("PDF input must supply bytes")
+            if len(block) > remaining:
+                raise ValueError("PDF stream exceeded its requested read size")
+            if not block:
+                break
+            data.extend(block)
+        data = bytes(data)
     if not isinstance(data, bytes):
         raise TypeError("PDF input must supply bytes")
     if len(data) > MAX_PDF_BYTES:

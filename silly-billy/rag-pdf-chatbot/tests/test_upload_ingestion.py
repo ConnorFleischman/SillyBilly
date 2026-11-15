@@ -8,6 +8,37 @@ from rag_backend import database, ingestion
 
 
 class UploadTests(unittest.TestCase):
+    def test_short_reads_preserve_all_bytes_and_enforce_total_limit(self):
+        class ShortStream(io.BytesIO):
+            def read(self, size=-1):
+                return super().read(min(size, 3))
+
+        payload = b'%PDF-complete fixture'
+        source = ShortStream(payload)
+        stored = []
+
+        def store(path, original_filename):
+            stored.append(path.read_bytes())
+            return 42
+
+        with patch.object(ingestion, 'store_pdf', side_effect=store):
+            self.assertEqual(ingestion.ingest_pdf(source, 'report.pdf'), 42)
+        self.assertEqual(stored, [payload])
+        self.assertFalse(source.closed)
+        for size in (12, 13):
+            with self.subTest(size=size), patch.object(ingestion, 'MAX_PDF_BYTES', 12), patch.object(
+                ingestion, 'store_pdf', side_effect=store
+            ) as storage:
+                source = ShortStream(b'%PDF-' + b'x' * (size - 5))
+                if size == 12:
+                    self.assertEqual(ingestion.ingest_pdf(source, 'report.pdf'), 42)
+                    self.assertEqual(len(stored[-1]), size)
+                else:
+                    with self.assertRaisesRegex(ValueError, 'limit'):
+                        ingestion.ingest_pdf(source, 'report.pdf')
+                    storage.assert_not_called()
+                self.assertFalse(source.closed)
+
     def test_cleanup_and_identity_for_new_duplicate_and_failed_storage(self):
         for result in (42, 17, RuntimeError('storage failed')):
             with self.subTest(result=result):
