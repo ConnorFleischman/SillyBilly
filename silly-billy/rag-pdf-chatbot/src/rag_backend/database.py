@@ -2,11 +2,11 @@ from pathlib import Path
 import hashlib
 
 import psycopg
-from database_config import get_database_url
+from .database_config import get_database_url
 from pgvector.psycopg import register_vector
 
-from chunk import chunk_pdf
-from embeddings import get_embedding
+from .chunk import chunk_pdf
+from .embeddings import get_embedding
 
 
 def calculate_file_hash(pdf_path):

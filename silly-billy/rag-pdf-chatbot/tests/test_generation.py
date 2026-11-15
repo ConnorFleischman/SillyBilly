@@ -1,5 +1,5 @@
 import builtins
-import importlib.util
+import importlib
 import os
 from pathlib import Path
 import sys
@@ -7,27 +7,26 @@ import types
 import unittest
 from unittest.mock import MagicMock, patch
 
-SOURCE = Path(__file__).resolve().parents[1] / 'src/generation.py'
+from rag_backend import generation
+SOURCE = Path(generation.__file__)
+
 
 def load():
-    spec = importlib.util.spec_from_file_location('generation_test', SOURCE)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return importlib.reload(generation)
 
 class GenerationTests(unittest.TestCase):
     def setUp(self):
         self.module = load()
         self.dotenv = types.ModuleType('dotenv')
         self.dotenv.load_dotenv = MagicMock()
-        self.retrieval = types.ModuleType('retrieval')
+        self.retrieval = types.ModuleType('rag_backend.retrieval')
         self.retrieval.retrieve_chunks = MagicMock(return_value=[('PDF fact', 7)])
         self.genai = MagicMock()
         self.client = self.genai.Client.return_value.__enter__.return_value
         self.client.models.generate_content.return_value.text = 'Answer (page 7)'
         google = types.ModuleType('google')
         google.genai = self.genai
-        for context in (patch.dict(sys.modules, {'dotenv': self.dotenv, 'retrieval': self.retrieval, 'google': google}),
+        for context in (patch.dict(sys.modules, {'dotenv': self.dotenv, 'rag_backend.retrieval': self.retrieval, 'google': google}),
                         patch.dict(os.environ, {'GEMINI_API_KEY': 'secret'}, clear=True)):
             context.start()
             self.addCleanup(context.stop)
@@ -67,7 +66,7 @@ class GenerationTests(unittest.TestCase):
             for text in ('What fact?', 'Page 7: PDF fact', 'using only the PDF context', 'page numbers'):
                 self.assertIn(text, call['contents'])
         paths = [c.args[0] for c in self.dotenv.load_dotenv.call_args_list]
-        self.assertEqual(paths[:2], [SOURCE.parent / '.env', SOURCE.parent.parent / '.env'])
+        self.assertEqual(paths[:2], [SOURCE.parents[1] / '.env', SOURCE.parents[2] / '.env'])
         self.assertTrue(all(not c.kwargs.get('override', False) for c in self.dotenv.load_dotenv.call_args_list))
         self.assertEqual(self.genai.Client.return_value.__exit__.call_count, 2)
 

@@ -1,4 +1,4 @@
-from python_reader import extract_text
+from .python_reader import extract_text
 
 
 def chunk_text(text, chunk_size=500, overlap=100):

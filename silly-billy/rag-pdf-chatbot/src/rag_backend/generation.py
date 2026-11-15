@@ -8,8 +8,8 @@ def get_gemini_config():
     """Load the existing dotenv locations and read configuration at call time."""
     from dotenv import load_dotenv
 
-    load_dotenv(Path(__file__).resolve().parent / ".env")
-    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+    load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env")
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not api_key:
         raise ValueError(
@@ -24,7 +24,7 @@ def get_gemini_config():
 
 def generate_answer(question, document_id):
     # Defer embedding/model dependencies until a question is actually asked.
-    from retrieval import retrieve_chunks
+    from .retrieval import retrieve_chunks
 
     # Step 1: Retrieve chunks from the selected PDF
     chunks = retrieve_chunks(question, document_id)

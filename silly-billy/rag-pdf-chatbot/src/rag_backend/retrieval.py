@@ -1,7 +1,7 @@
 import psycopg
-from database_config import get_database_url
+from .database_config import get_database_url
 from pgvector.psycopg import register_vector
-from embeddings import get_embedding
+from .embeddings import get_embedding
 
 
 def retrieve_chunks(question, document_id):

@@ -13,8 +13,8 @@ def get_database_url():
     """Read configuration at call time so environment changes take effect."""
     from dotenv import load_dotenv
 
-    load_dotenv(Path(__file__).resolve().parent / ".env")
-    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+    load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env")
     url = os.environ.get("DATABASE_URL", "").strip()
     if not url:
         raise ValueError(

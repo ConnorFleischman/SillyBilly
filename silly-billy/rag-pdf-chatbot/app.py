@@ -1,17 +1,11 @@
 
-import sys
 import tempfile
 from pathlib import Path
 
 import streamlit as st
 
-# Make the existing backend modules importable
-PROJECT_ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
-
-from database import store_pdf
-from generation import generate_answer
-
+from rag_backend.database import store_pdf
+from rag_backend.generation import generate_answer
 
 st.set_page_config(
     page_title="RAG PDF Chatbot",
