@@ -22,6 +22,19 @@ config = load_module("database_config", ROOT / "src/database_config.py")
 
 
 class ConfigurationTests(unittest.TestCase):
+    def test_dotenv_database_url_is_loaded_before_connecting(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            for location in (root / ".env", root / "src/.env"):
+                with self.subTest(location=location):
+                    location.write_text("DATABASE_URL=postgresql://fixture/local\n", encoding="utf-8")
+                    with patch.dict(os.environ, {}, clear=True), patch.object(
+                        config, "__file__", str(root / "src/database_config.py")
+                    ):
+                        self.assertEqual(config.get_database_url(), "postgresql://fixture/local")
+                    location.unlink()
+
     def test_missing_empty_and_whitespace_have_actionable_error(self):
         for env in ({}, {"DATABASE_URL": ""}, {"DATABASE_URL": "  "}):
             with self.subTest(env=env), patch.dict(os.environ, env, clear=True):
