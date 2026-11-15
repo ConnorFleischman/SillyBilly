@@ -1,0 +1,89 @@
+{
+  "notice": "Entirely fictional test/demo material; no real people or courses.",
+  "documents": [
+    {
+      "id": "complete",
+      "pdf": "complete-syllabus.pdf",
+      "pages": [
+        [
+          "CLOUD 101: Imaginary Weather",
+          "Fictional syllabus - Lantern Demo Academy",
+          "Overview",
+          "Explore invented cloud systems through observation and simple models.",
+          "Objective: compare cloud patterns using a field notebook.",
+          "Lectures",
+          "Meet Mondays and Wednesdays, 10:00-11:15, in Cloud Room.",
+          "September 9, 2030: Cloud observation workshop."
+        ],
+        [],
+        [
+          "CLOUD 101 - Assignments and exams",
+          "Fictional syllabus - Lantern Demo Academy",
+          "Assignment deadlines",
+          "Cloud notebook due October 7, 2030 at 17:00.",
+          "Forecast project due November 18, 2030 at 17:00.",
+          "Exams",
+          "Midterm: October 16, 2030 at 10:00 in Cloud Room.",
+          "Final exam: December 11, 2030 at 10:00 in Cloud Room."
+        ],
+        [
+          "CLOUD 101 - Grading",
+          "Fictional syllabus - Lantern Demo Academy",
+          "Grading",
+          "Cloud notebook 25%; forecast project 35%; midterm 15%; final exam 25%.",
+          "Late work loses 5 percentage points per day for up to three days."
+        ]
+      ]
+    },
+    {
+      "id": "missing",
+      "pdf": "missing-sections.pdf",
+      "pages": [
+        [
+          "MOSS 202: Imaginary Gardens",
+          "Fictional syllabus - Lantern Demo Academy",
+          "Overview",
+          "Study invented moss habitats using sketches and discussion."
+        ],
+        [
+          "MOSS 202 - Meetings",
+          "Fictional syllabus - Lantern Demo Academy",
+          "Lectures",
+          "Meet Tuesdays, 14:00-15:00, in Moss Room.",
+          "September 10, 2030: Habitat sketch workshop."
+        ]
+      ]
+    },
+    {
+      "id": "conflicting",
+      "pdf": "conflicting-syllabus.pdf",
+      "pages": [
+        [
+          "CLOUD 101: Imaginary Weather - Alternate Demo",
+          "Fictional syllabus - Lantern Demo Academy",
+          "Overview",
+          "Explore invented cloud systems through paper simulations.",
+          "Lectures",
+          "Meet Thursdays, 16:00-17:00, in Rain Room."
+        ],
+        [
+          "CLOUD 101 - Alternate assignments and exams",
+          "Fictional syllabus - Lantern Demo Academy",
+          "Assignment deadlines",
+          "Cloud notebook due October 21, 2030 at 12:00.",
+          "Forecast project due November 25, 2030 at 12:00.",
+          "Exams",
+          "Midterm: October 30, 2030 at 16:00 in Rain Room.",
+          "Final exam: December 18, 2030 at 16:00 in Rain Room."
+        ],
+        [
+          "CLOUD 101 - Alternate grading",
+          "Fictional syllabus - Lantern Demo Academy",
+          "Grading",
+          "Cloud notebook 10%; forecast project 20%; midterm 30%; final exam 40%.",
+          "Late work is not accepted."
+        ]
+      ]
+    }
+  ]
+}

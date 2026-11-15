@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "documents": [
+    {
+      "id": "complete",
+      "pdf": "complete-syllabus.pdf",
+      "page_count": 4,
+      "blank_pages": [
+        2
+      ],
+      "missing_sections": [],
+      "expected_facts": {
+        "overview": [
+          {
+            "text": "Explore invented cloud systems through observation and simple models.",
+            "page": 1
+          },
+          {
+            "text": "Objective: compare cloud patterns using a field notebook.",
+            "page": 1
+          }
+        ],
+        "due_dates": [
+          {
+            "text": "Cloud notebook due October 7, 2030 at 17:00.",
+            "page": 3
+          },
+          {
+            "text": "Forecast project due November 18, 2030 at 17:00.",
+            "page": 3
+          }
+        ],
+        "lecture_dates": [
+          {
+            "text": "Meet Mondays and Wednesdays, 10:00-11:15, in Cloud Room.",
+            "page": 1
+          },
+          {
+            "text": "September 9, 2030: Cloud observation workshop.",
+            "page": 1
+          }
+        ],
+        "exam_dates": [
+          {
+            "text": "Midterm: October 16, 2030 at 10:00 in Cloud Room.",
+            "page": 3
+          },
+          {
+            "text": "Final exam: December 11, 2030 at 10:00 in Cloud Room.",
+            "page": 3
+          }
+        ],
+        "grading": [
+          {
+            "text": "Cloud notebook 25%; forecast project 35%; midterm 15%; final exam 25%.",
+            "page": 4
+          },
+          {
+            "text": "Late work loses 5 percentage points per day for up to three days.",
+            "page": 4
+          }
+        ]
+      },
+      "canonical_summary": {
+        "overview": [
+          "Explore invented cloud systems through observation and simple models. [Page 1]",
+          "Objective: compare cloud patterns using a field notebook. [Page 1]"
+        ],
+        "due_dates": [
+          "Cloud notebook due October 7, 2030 at 17:00. [Page 3]",
+          "Forecast project due November 18, 2030 at 17:00. [Page 3]"
+        ],
+        "lecture_dates": [
+          "Meet Mondays and Wednesdays, 10:00-11:15, in Cloud Room. [Page 1]",
+          "September 9, 2030: Cloud observation workshop. [Page 1]"
+        ],
+        "exam_dates": [
+          "Midterm: October 16, 2030 at 10:00 in Cloud Room. [Page 3]",
+          "Final exam: December 11, 2030 at 10:00 in Cloud Room. [Page 3]"
+        ],
+        "grading": [
+          "Cloud notebook 25%; forecast project 35%; midterm 15%; final exam 25%. [Page 4]",
+          "Late work loses 5 percentage points per day for up to three days. [Page 4]"
+        ]
+      }
+    },
+    {
+      "id": "missing",
+      "pdf": "missing-sections.pdf",
+      "page_count": 2,
+      "blank_pages": [],
+      "missing_sections": [
+        "due_dates",
+        "exam_dates",
+        "grading"
+      ],
+      "expected_facts": {
+        "overview": [
+          {
+            "text": "Study invented moss habitats using sketches and discussion.",
+            "page": 1
+          }
+        ],
+        "due_dates": [],
+        "lecture_dates": [
+          {
+            "text": "Meet Tuesdays, 14:00-15:00, in Moss Room.",
+            "page": 2
+          },
+          {
+            "text": "September 10, 2030: Habitat sketch workshop.",
+            "page": 2
+          }
+        ],
+        "exam_dates": [],
+        "grading": []
+      },
+      "canonical_summary": {
+        "overview": [
+          "Study invented moss habitats using sketches and discussion. [Page 1]"
+        ],
+        "due_dates": [],
+        "lecture_dates": [
+          "Meet Tuesdays, 14:00-15:00, in Moss Room. [Page 2]",
+          "September 10, 2030: Habitat sketch workshop. [Page 2]"
+        ],
+        "exam_dates": [],
+        "grading": []
+      }
+    },
+    {
+      "id": "conflicting",
+      "pdf": "conflicting-syllabus.pdf",
+      "page_count": 3,
+      "blank_pages": [],
+      "missing_sections": [],
+      "expected_facts": {
+        "overview": [
+          {
+            "text": "Explore invented cloud systems through paper simulations.",
+            "page": 1
+          }
+        ],
+        "due_dates": [
+          {
+            "text": "Cloud notebook due October 21, 2030 at 12:00.",
+            "page": 2
+          },
+          {
+            "text": "Forecast project due November 25, 2030 at 12:00.",
+            "page": 2
+          }
+        ],
+        "lecture_dates": [
+          {
+            "text": "Meet Thursdays, 16:00-17:00, in Rain Room.",
+            "page": 1
+          }
+        ],
+        "exam_dates": [
+          {
+            "text": "Midterm: October 30, 2030 at 16:00 in Rain Room.",
+            "page": 2
+          },
+          {
+            "text": "Final exam: December 18, 2030 at 16:00 in Rain Room.",
+            "page": 2
+          }
+        ],
+        "grading": [
+          {
+            "text": "Cloud notebook 10%; forecast project 20%; midterm 30%; final exam 40%.",
+            "page": 3
+          },
+          {
+            "text": "Late work is not accepted.",
+            "page": 3
+          }
+        ]
+      },
+      "canonical_summary": {
+        "overview": [
+          "Explore invented cloud systems through paper simulations. [Page 1]"
+        ],
+        "due_dates": [
+          "Cloud notebook due October 21, 2030 at 12:00. [Page 2]",
+          "Forecast project due November 25, 2030 at 12:00. [Page 2]"
+        ],
+        "lecture_dates": [
+          "Meet Thursdays, 16:00-17:00, in Rain Room. [Page 1]"
+        ],
+        "exam_dates": [
+          "Midterm: October 30, 2030 at 16:00 in Rain Room. [Page 2]",
+          "Final exam: December 18, 2030 at 16:00 in Rain Room. [Page 2]"
+        ],
+        "grading": [
+          "Cloud notebook 10%; forecast project 20%; midterm 30%; final exam 40%. [Page 3]",
+          "Late work is not accepted. [Page 3]"
+        ]
+      }
+    }
+  ]
+}
