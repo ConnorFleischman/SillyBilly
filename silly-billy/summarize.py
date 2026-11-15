@@ -1,7 +1,6 @@
-class SummaryUnavailable(Exception):
-    """Raised while the project's summary generator is being integrated."""
+from rag_backend.summary_generation import generate_syllabus_summary
 
 
 def summarize_syllabus(document_id: int) -> dict[str, list[str]]:
-    """Generate summary fields from an indexed document ID (pending M3/M4)."""
-    raise SummaryUnavailable()
+    """Return validated summary fields for the server-indexed document."""
+    return generate_syllabus_summary(document_id)

@@ -28,9 +28,9 @@ with patch.object(psycopg, 'connect', side_effect=AssertionError('unexpected DB'
         page = pdf.new_page()
         page.insert_text((72, 72), 'Course syllabus fixture')
         data = pdf.tobytes()
-    with patch('app.ingest_pdf', return_value=42):
+    with patch('app.ingest_pdf', return_value=42), patch('rag_backend.summary_retrieval.retrieve_summary_evidence', return_value={field: [] for field in ('overview', 'due_dates', 'lecture_dates', 'exam_dates', 'grading')}):
         response = client.post('/api/summarize', data={'syllabus': (io.BytesIO(data), 'course.pdf')})
-    assert response.status_code == 501, response.data
+    assert response.status_code == 200, response.data
 assert 'sentence_transformers' not in sys.modules
 assert 'google.genai' not in sys.modules
 '''

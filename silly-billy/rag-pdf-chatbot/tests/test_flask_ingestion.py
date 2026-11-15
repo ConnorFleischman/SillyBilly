@@ -44,11 +44,11 @@ class EndpointTests(unittest.TestCase):
             self.assertEqual(original_filename, 'Course syllabus.pdf')
             self.assertEqual({c['page'] for c in prepared_chunks}, {2})
             return 42
-        with patch.object(ingestion, 'store_pdf', side_effect=store), patch.object(web, 'summarize_syllabus', side_effect=web.SummaryUnavailable) as summary:
+        with patch.object(ingestion, 'store_pdf', side_effect=store), patch.object(web, 'summarize_syllabus', side_effect=RuntimeError("private-key")) as summary:
             for _ in range(2):
                 response = self.post(data)
-                self.assertEqual(response.status_code, 501)
-                self.assertIn('stored and indexed', response.json['error'])
+                self.assertEqual(response.status_code, 503)
+                self.assertNotIn('private-key', response.get_data(as_text=True))
             self.assertEqual(summary.call_args.args, (42,))
         def fail(path, **kwargs):
             paths.append(path)
@@ -57,14 +57,14 @@ class EndpointTests(unittest.TestCase):
             response = self.post(data)
             self.assertEqual(response.status_code, 503)
             self.assertNotIn('secret', response.get_data(as_text=True))
-        with patch.object(ingestion, 'store_pdf', side_effect=store):
-            self.assertEqual(self.post(data).status_code, 501)
+        with patch.object(ingestion, 'store_pdf', side_effect=store), patch.object(web, 'summarize_syllabus', side_effect=RuntimeError):
+            self.assertEqual(self.post(data).status_code, 503)
         self.assertTrue(all(not p.parent.exists() for p in paths))
 
     def test_size_limits(self):
         data = pdf_bytes()
-        with patch.object(ingestion, 'MAX_PDF_BYTES', len(data)), patch.object(ingestion, 'store_pdf', return_value=42):
-            self.assertEqual(self.post(data).status_code, 501)
+        with patch.object(ingestion, 'MAX_PDF_BYTES', len(data)), patch.object(ingestion, 'store_pdf', return_value=42), patch.object(web, 'summarize_syllabus', side_effect=RuntimeError):
+            self.assertEqual(self.post(data).status_code, 503)
             self.assertEqual(self.post(data + b'x').status_code, 413)
         with patch.dict(web.app.config, MAX_CONTENT_LENGTH=128):
             response = self.post(data)

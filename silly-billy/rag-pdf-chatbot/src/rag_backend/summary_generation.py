@@ -1,4 +1,4 @@
-"""Module-only syllabus generation with strict JSON and source-page validation."""
+"""Syllabus generation with strict JSON and source-page validation."""
 import json
 import re
 
@@ -93,8 +93,8 @@ def generate_syllabus_summary(document_id):
     provider errors raise sanitized RuntimeError messages; invalid responses raise
     InvalidSummaryResponseError.
     Prompt separation reduces instruction confusion but does not prove grounding.
-    Timeout/retry policy is a later feature;
-    this interface must not be exposed by the Flask summarizer yet.
+    Flask exposes the validated result through summarize_syllabus.
+
     """
     from .summary_retrieval import PASSAGE_SEPARATOR, retrieve_summary_evidence
 
@@ -107,9 +107,6 @@ def generate_syllabus_summary(document_id):
         return {field: [] for field in SUMMARY_FIELDS}
 
     contents = json.dumps({"document_id": document_id, "section_evidence": sections})
-    api_key, model = get_gemini_config()
-    from google import genai
-
     # A plain JSON Schema is supported by google-genai's response_json_schema.
     schema = {
         "type": "object",
@@ -121,18 +118,26 @@ def generate_syllabus_summary(document_id):
         "required": list(SUMMARY_FIELDS),
         "additionalProperties": False,
     }
+    response_text = request_gemini_text(contents, config={
+        "system_instruction": SYSTEM_INSTRUCTION,
+        "response_mime_type": "application/json",
+        "response_json_schema": schema,
+    })
+    return _validate_response(response_text, evidence)
+
+
+def request_gemini_text(contents, config):
+    """Call Gemini and expose a fixed message if the provider fails."""
+    api_key, model = get_gemini_config()
+    from google import genai
+
     try:
         with genai.Client(api_key=api_key) as client:
-            response = client.models.generate_content(
-                model=model, contents=contents,
-                config={"system_instruction": SYSTEM_INSTRUCTION,
-                        "response_mime_type": "application/json",
-                        "response_json_schema": schema},
-            )
-            response_text = response.text
+            return client.models.generate_content(
+                model=model, contents=contents, config=config,
+            ).text
     except Exception:
         raise RuntimeError(
             "Gemini summary generation failed. Check GEMINI_API_KEY, GEMINI_MODEL, "
             "network access, and provider availability."
         ) from None
-    return _validate_response(response_text, evidence)

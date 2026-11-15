@@ -5,7 +5,7 @@ from rag_backend.ingestion import (
 )
 from flask import Flask, jsonify, request
 
-from summarize import SummaryUnavailable, summarize_syllabus
+from summarize import summarize_syllabus
 
 SITE = Path(__file__).resolve().parent / "site"
 
@@ -44,5 +44,6 @@ def summarize():
 
     try:
         return jsonify(summarize_syllabus(document_id))
-    except SummaryUnavailable:
-        return jsonify(error="PDF stored and indexed. Summary generation is pending. You can view an example below the upload form."), 501
+    except Exception:
+        # Retrieval and unexpected failures may contain credentials or PDF text.
+        return jsonify(error="Summary generation is unavailable. Please try again later."), 503
