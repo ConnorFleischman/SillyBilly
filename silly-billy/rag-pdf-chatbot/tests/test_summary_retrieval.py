@@ -82,12 +82,21 @@ class SummaryRetrievalTests(unittest.TestCase):
 
     def test_character_budgets_include_tags_and_truncate_prefix(self):
         evidence = retrieval.retrieve_summary_evidence(1, section_char_limit=60, total_char_limit=250)
-        lengths = [sum(len(p.render()) for p in items) for items in evidence.values()]
+        lengths = [len(retrieval.PASSAGE_SEPARATOR.join(p.render() for p in items)) for items in evidence.values()]
         self.assertTrue(all(0 < n <= 50 for n in lengths))
         self.assertLessEqual(sum(lengths), 250)
         self.assertTrue(ROWS[0][2].startswith(evidence['overview'][0].text))
         tiny = retrieval.retrieve_summary_evidence(1, total_char_limit=1)
         self.assertTrue(all(v == [] for v in tiny.values()))
+
+    def test_multiple_passage_separators_count_towards_section_budget(self):
+        self.rows = [(1, i, text, i, (1, 0, 0, 0, 0))
+                     for i, text in enumerate(('one', 'two', 'three', 'four'), 1)]
+        evidence = retrieval.retrieve_summary_evidence(1, section_char_limit=40, total_char_limit=200)
+        for passages in evidence.values():
+            self.assertGreater(len(passages), 1)
+            context = retrieval.PASSAGE_SEPARATOR.join(p.render() for p in passages)
+            self.assertLessEqual(len(context), 40)
 
     def test_invalid_arguments_fail_before_services(self):
         for kwargs in ({'document_id': 0}, {'document_id': True}, {'document_id': '1'},

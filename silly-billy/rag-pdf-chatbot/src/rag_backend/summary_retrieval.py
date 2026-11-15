@@ -18,6 +18,7 @@ SECTION_QUESTIONS = {
 CANDIDATE_LIMIT = 20
 MAX_SECTION_CHARS = 4000
 MAX_TOTAL_CHARS = 20000
+PASSAGE_SEPARATOR = "\n"
 
 
 @dataclass(frozen=True)
@@ -46,7 +47,8 @@ def retrieve_summary_evidence(
     Empty lists mean no usable retrieved evidence, not proof of absent facts.
     Each section searches separately, selecting at most 20 candidates. Exact
     passages repeated with different whitespace/case are collapsed per section;
-    a passage relevant to two sections may appear in both. Page tags count in
+    a passage relevant to two sections may appear in both. Page tags and
+    PASSAGE_SEPARATOR between rendered passages count in
     budgets. Each section receives an equal share of the total budget (unused
     space is not reassigned), so earlier sections cannot consume later shares.
     Prefix truncation preserves source wording but may omit a trailing fact.
@@ -81,11 +83,12 @@ def retrieve_summary_evidence(
                     if key in seen:
                         continue
                     seen.add(key)
-                    available = remaining - len(f"[Page {page}] ")
+                    separator_cost = len(PASSAGE_SEPARATOR) if result[section] else 0
+                    available = remaining - separator_cost - len(f"[Page {page}] ")
                     if available <= 0:
                         break
                     excerpt = text[:available]
                     passage = EvidencePassage(chunk_id, page, excerpt)
                     result[section].append(passage)
-                    remaining -= len(passage.render())
+                    remaining -= separator_cost + len(passage.render())
     return result
