@@ -25,8 +25,8 @@
     <div class="workspace">
       <section class="panel" aria-labelledby="upload-title">
         <h2 id="upload-title">Upload a syllabus</h2>
-        <p id="file-help" class="muted">PDF up to 25 MB</p>
-        <form id="upload-form">
+        <p id="file-help" class="muted">PDF up to 25 MiB</p>
+        <form id="upload-form" novalidate aria-busy="false">
           <label for="syllabus">Choose a PDF</label>
           <input id="syllabus" name="syllabus" type="file" accept=".pdf,application/pdf" aria-describedby="file-help" required>
           <button class="primary" type="submit">Summarize syllabus <span aria-hidden="true">→</span></button>
@@ -39,7 +39,8 @@
           <h2 id="results-title">Syllabus summary</h2>
           <span id="example-label" class="tag" hidden>Example</span>
         </div>
-        <p role="status" id="status" class="muted">Upload a syllabus or view an example to get started.</p>
+        <p role="status" id="status" aria-atomic="true" class="muted">Upload a syllabus or view an example to get started.</p>
+        <button class="secondary" id="retry" type="button" hidden>Try again with selected PDF</button>
         <dl id="summary" hidden></dl>
       </section>
     </div>

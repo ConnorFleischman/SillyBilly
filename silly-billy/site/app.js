@@ -21,6 +21,43 @@ const summary = document.querySelector("#summary");
 const exampleButton = document.querySelector("#example");
 const exampleLabel = document.querySelector("#example-label");
 const submit = form.querySelector("button");
+const retry = document.querySelector("#retry");
+let busy = false;
+
+function clearResults() {
+  summary.replaceChildren();
+  summary.hidden = true;
+  exampleLabel.hidden = true;
+  retry.hidden = true;
+}
+
+function setBusy(value) {
+  busy = value;
+  input.disabled = submit.disabled = exampleButton.disabled = retry.disabled = value;
+  form.setAttribute("aria-busy", String(value));
+}
+
+function validSummary(data) {
+  return data !== null && typeof data === "object" && !Array.isArray(data) &&
+    Object.keys(data).length === fields.length && fields.every(([key]) =>
+      Array.isArray(data[key]) && data[key].length <= 50 && data[key].every(entry =>
+        typeof entry === "string" && entry.length <= 2000 &&
+        /^[^\[\]\r\n]+(?: \[Page [1-9][0-9]*\])+$/.test(entry)));
+}
+
+const knownErrorMessages = new Set([
+  "Choose a PDF syllabus.", "Choose a PDF no larger than 25 MB.",
+  "The selected file is not a readable PDF.",
+  "Choose a PDF without password protection.",
+  "This PDF has no selectable text. Try a text-based PDF.",
+  "PDF ingestion is unavailable. Please try again later.",
+  "Summary generation is unavailable. Please try again later.",
+]);
+
+function failure(message) {
+  status.textContent = message;
+  retry.hidden = false;
+}
 
 function showSummary(data, isExample) {
   summary.replaceChildren();
@@ -37,7 +74,7 @@ function showSummary(data, isExample) {
       }
       description.append(list);
     } else {
-      description.textContent = "No details found.";
+      description.textContent = "No details found in retrieved syllabus evidence";
     }
     summary.append(title, description);
   }
@@ -47,15 +84,35 @@ function showSummary(data, isExample) {
   status.textContent = isExample ? "Sample course details." : "Summary ready.";
 }
 
-exampleButton.addEventListener("click", () => showSummary(example, true));
+exampleButton.addEventListener("click", () => {
+  if (busy) return;
+  clearResults();
+  showSummary(example, true);
+});
+
+input.addEventListener("change", () => {
+  if (busy) return;
+  clearResults();
+  status.textContent = input.files[0] ? `Selected: ${input.files[0].name}. Ready to summarize.` :
+    "Choose a PDF syllabus.";
+});
+
+retry.addEventListener("click", () => form.requestSubmit());
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  summary.hidden = true;
-  exampleLabel.hidden = true;
-  status.hidden = false;
-
-  if (input.files[0].size > 25 * 1024 * 1024) {
+  if (busy) return;
+  clearResults();
+  const file = input.files[0];
+  if (!file || !/\.pdf$/i.test(file.name)) {
+    status.textContent = "Choose a PDF syllabus.";
+    return;
+  }
+  if (file.size === 0) {
+    status.textContent = "Choose a nonempty PDF with selectable text.";
+    return;
+  }
+  if (file.size > 25 * 1024 * 1024) {
     status.textContent = "Choose a PDF no larger than 25 MB.";
     return;
   }
@@ -64,21 +121,35 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
-  submit.disabled = true;
-  exampleButton.disabled = true;
-  status.textContent = "Reading your syllabus…";
+  // Capture the file before disabling its control (disabled inputs are omitted by FormData).
+  const body = new FormData();
+  body.append("syllabus", file);
+  setBusy(true);
+  status.textContent = `Reading ${file.name}? This may take a while.`;
   try {
-    const response = await fetch("/api/summarize", { method: "POST", body: new FormData(form) });
-    const data = await response.json();
+    const response = await fetch("/api/summarize", { method: "POST", body });
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      failure("The server returned an unreadable response. Try again, or check that the Python server is running.");
+      return;
+    }
     if (!response.ok) {
-      status.textContent = data.error || "The syllabus could not be summarized.";
+      const safeMessage = data && knownErrorMessages.has(data.error) &&
+        typeof data.error === "string" && data.error.trim() && data.error.length <= 500;
+      failure(safeMessage ? data.error : "The syllabus could not be summarized. Try again, or contact the server administrator.");
+      return;
+    }
+    if (!validSummary(data)) {
+      failure("The server returned an invalid summary. Try again, or contact the server administrator.");
       return;
     }
     showSummary(data, false);
+    status.textContent = `Summary ready for ${file.name}. Check the original syllabus for full details.`;
   } catch {
-    status.textContent = "Could not get a summary. Check that the Python server is running and try again.";
+    failure("Could not reach the server. Check your connection and that the Python server is running, then try again.");
   } finally {
-    submit.disabled = false;
-    exampleButton.disabled = false;
+    setBusy(false);
   }
 });
