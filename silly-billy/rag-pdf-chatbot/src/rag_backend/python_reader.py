@@ -2,11 +2,13 @@ import pymupdf
 
 
 def extract_text(pdf_path):
-    doc = pymupdf.open(pdf_path)
-    pages_text = {}
+    """Return selectable text keyed by original 1-based page number.
 
-    for page_number, page in enumerate(doc, start=1):
-        pages_text[page_number] = page.get_text()
-
-    doc.close()
-    return pages_text
+    Empty pages remain in the mapping so callers never renumber later pages.
+    The document is closed even if page extraction fails.
+    """
+    with pymupdf.open(pdf_path) as doc:
+        return {
+            page_number: page.get_text()
+            for page_number, page in enumerate(doc, start=1)
+        }

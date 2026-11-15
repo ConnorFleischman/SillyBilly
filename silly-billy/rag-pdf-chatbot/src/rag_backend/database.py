@@ -19,7 +19,12 @@ def calculate_file_hash(pdf_path):
     return hasher.hexdigest()
 
 
-def store_pdf(pdf_path):
+def store_pdf(pdf_path, original_filename=None):
+    """Store a PDF, optionally using its upload name as display metadata.
+
+    The path still supplies the bytes and defaults to its basename for legacy
+    callers. Duplicate content retains the existing document and its metadata.
+    """
     pdf_path = Path(pdf_path)
 
     # Step 1: Calculate the PDF fingerprint
@@ -61,7 +66,7 @@ def store_pdf(pdf_path):
                 VALUES (%s, %s)
                 RETURNING document_id
                 """,
-                (pdf_path.name, file_hash)
+                (original_filename if original_filename is not None else pdf_path.name, file_hash)
             )
 
             document_id = cur.fetchone()[0]
