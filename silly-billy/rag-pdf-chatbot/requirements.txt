@@ -1,0 +1,7 @@
+streamlit
+pymupdf
+sentence-transformers
+psycopg[binary]
+pgvector
+google-genai
+python-dotenv
